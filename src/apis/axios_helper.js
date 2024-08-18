@@ -1,11 +1,12 @@
-import axios from "axios";
-axios.defaults.baseURL='http://localhost:8080/'
-axios.defaults.headers.post["Content-type"]='application/json'
+import axios from 'axios';
 
-export const request = (method , url , data) =>{
+export const request = (method, url, data) => {
     return axios({
-        method: method,
-        url: url,
-        data: data
+        method,
+        url: `http://localhost:8080${url}`,
+        data,
+        headers: {
+            'Content-Type': 'application/json',
+        }
     });
 };

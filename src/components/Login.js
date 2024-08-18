@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { Avatar, Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+
 import LockIcon from '@mui/icons-material/Lock';
 import PortLogo from './images/PortLogo.png';
 import { request } from "../apis/axios_helper";
@@ -8,55 +10,37 @@ import { request } from "../apis/axios_helper";
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate()
 
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
             const response = await request('post', '/api/auth/authenticate', { username, password });
+            console.log('Response:', response.data); // Add this line to inspect the response data
             const { token } = response.data;
-
-            //localStorage.setItem('token', token);
-
-            const userToken = token || localStorage.getItem("token");
-            if (!userToken) {
-              //redirectToPortnet();
-              console.log("Interdit")
-            }
-            const decodedToken = jwtDecode(userToken);
-            
-            //if (isTokenExpired(decodedToken)) {
-              //redirectToPortnet();
-            //} 
-            
-              localStorage.setItem("token", userToken);
-             /* dispatch(
-                setUserInfos({
-                  token: userToken,
-                  authorities: decodedToken.roles,
-                  username: decodedToken.username,
-                })
-              );*/
-            
-            const role = decodedToken.role
-            //console.log("hello decodedToken",decodedToken)
-
-            localStorage.setItem('role', role);
-            // Redirect based on role
-            if (role === 'ADMIN') {
-                window.location.href = '/admin';
-            } else if (role === 'AGENT') {
-                window.location.href = '/agent';
-            } else if(role=='CLIENT'){ 
-                //console.log("hello from client")
-                window.location.href = '/client';
+            console.log('Token:', token); // Add this line to inspect the token
+    
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                localStorage.setItem("token", token);
+                localStorage.setItem('role', decodedToken.role);
+                localStorage.setItem('userId', decodedToken.id);
+    
+                if (decodedToken.role === 'ADMIN') {
+                    navigate("/admin");
+                } else if (decodedToken.role === 'AGENT') {
+                    navigate("/agent");
+                } else if (decodedToken.role === 'CLIENT') {
+                    navigate("/client");
+                }
             } else {
-
-                console.log('erreur')
+                console.log("No token received");
             }
         } catch (error) {
             console.error('Login failed', error);
         }
     };
+    
 
     return (
         <Grid>
