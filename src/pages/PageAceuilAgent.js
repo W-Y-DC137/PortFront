@@ -5,7 +5,7 @@ const PageAgent = () => {
   return (
     <div>
          <AgentHeader />
-      <h1>Welcome Agent</h1>
+      <h1>page dyal l'Agent</h1>
     </div>
   );
 };

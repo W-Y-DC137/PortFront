@@ -4,21 +4,48 @@ import Login from "./components/Login";
 import PageClient from "./pages/PageAcceuilClient";
 import PageAgent from "./pages/PageAceuilAgent";
 import ProfileAgent from './pages/AgentPages/Profile';
-import AgentTicketList from './pages/AgentPages/TicketList'
+import AgentTicketList from './pages/AgentPages/TicketList';
+import CreateTicket from './pages/ClientPages/CreateTicket';
+import ClientTicketList from './pages/ClientPages/SuivreMesTickets'; // Add this import
+import TicketDetails from './pages/TicketDetails';
 import PageAdmin from "./pages/PageAcceuilAdmin";
+import AdminUserList from './pages/AdminPages/UsersList';
 import PrivateRoute from './router/PrivateRouter';
 
 const App = () => {
     return (
         <Router>
             <Routes>
-                
                 <Route path="/login" element={<Login />} />
+                <Route
+                    path="/employee/profile"
+                    element={
+                        <PrivateRoute>
+                            <ProfileAgent />
+                        </PrivateRoute>
+                    }
+                />
                 <Route
                     path="/admin"
                     element={
                         <PrivateRoute>
                             <PageAdmin />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/admin/tickets"
+                    element={
+                        <PrivateRoute>
+                            <AgentTicketList />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/admin/users"
+                    element={
+                        <PrivateRoute>
+                            <AdminUserList />
                         </PrivateRoute>
                     }
                 />
@@ -30,14 +57,7 @@ const App = () => {
                         </PrivateRoute>
                     }
                 />
-                 <Route
-                    path="/agent/profile"
-                    element={
-                        <PrivateRoute>
-                            <ProfileAgent />
-                        </PrivateRoute>
-                    }
-                />
+                
                 <Route
                     path="/agent/tickets"
                     element={
@@ -47,10 +67,34 @@ const App = () => {
                     }
                 />
                 <Route
+                    path="/ticket/:id"
+                    element={
+                        <PrivateRoute>
+                            <TicketDetails />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
                     path="/client"
                     element={
                         <PrivateRoute>
                             <PageClient />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/client/create-ticket"
+                    element={
+                        <PrivateRoute>
+                            <CreateTicket />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/client/tickets"
+                    element={
+                        <PrivateRoute>
+                            <ClientTicketList />
                         </PrivateRoute>
                     }
                 />

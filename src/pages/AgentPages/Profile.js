@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, IconButton, Grid } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { request } from '../../apis/axios_helper';
+import Header from '../../components/Header';
 
 const Profile = () => {
     const userId = localStorage.getItem('userId');
@@ -43,6 +44,8 @@ const Profile = () => {
     };
 
     return (
+        <div>
+            <Header/>
         <Grid container spacing={2} direction="column" alignItems="center">
             <Grid item>
                 <h1>Welcome to Profile Page</h1>
@@ -88,6 +91,7 @@ const Profile = () => {
                 </Button>
             </Grid>
         </Grid>
+        </div>
     );
 };
 
