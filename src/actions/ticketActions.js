@@ -44,4 +44,34 @@ export const createTicketFailure = (error) => ({
   payload: error,
 });
 
+// New actions for fetching tickets by client ID
+export const fetchTicketsByClientRequest = (clientId) => ({
+  type: 'FETCH_TICKETS_BY_CLIENT_REQUEST',
+  payload: clientId,
+});
 
+export const fetchTicketsByClientSuccess = (tickets) => ({
+  type: 'FETCH_TICKETS_BY_CLIENT_SUCCESS',
+  payload: tickets,
+});
+
+export const fetchTicketsByClientFailure = (error) => ({
+  type: 'FETCH_TICKETS_BY_CLIENT_FAILURE',
+  payload: error,
+});
+
+// actions/ticketActions.js
+export const fetchTicketAttachmentsRequest = (ticketId) => ({
+  type: 'FETCH_TICKET_ATTACHMENTS_REQUEST',
+  payload: ticketId,
+});
+
+export const fetchTicketAttachmentsSuccess = (attachments) => ({
+  type: 'FETCH_TICKET_ATTACHMENTS_SUCCESS',
+  payload: attachments,
+});
+
+export const fetchTicketAttachmentsFailure = (error) => ({
+  type: 'FETCH_TICKET_ATTACHMENTS_FAILURE',
+  payload: error,
+});

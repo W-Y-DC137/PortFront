@@ -11,3 +11,4 @@ export const fetchUtilisateursFailure = (error) => ({
     type: 'FETCH_UTILISATEURS_FAILURE',
     payload: error,
 });
+

@@ -74,38 +74,37 @@ const CreateTicket = () => {
   const handleSubmit = async () => {
     const dateOuvertureDto = new Date();
     const idClientDto = localStorage.getItem('userId'); // Retrieve the actual ID of the authenticated user
-  
+
     const newTicket = {
-      ...ticket,
-      dateOuvertureDto,
-      idClientDto, // Use the retrieved user ID
-      statusDto: 'Nouveau'
+        ...ticket,
+        dateOuvertureDto,
+        idClientDto, // Use the retrieved user ID
+        statusDto: 'Nouveau'
     };
     try {
-       const response = await request('post', '/api/tickets', newTicket);
-       console.log(response.data); // Check the response structure
-       const ticketId = response.data.idTicketDto;  // Assuming the response contains the created ticket's ID
-       console.log(ticketId);
-      // If attachments exist, upload them
-      if (attachments.length > 0) {
-        for (let i = 0; i < attachments.length; i++) {
-          const formData = new FormData();
-          formData.append('file', attachments[i]);
-          await request('post', `/api/ticketAttachements/upload/${ticketId}`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
+        const response = await request('post', '/api/tickets', newTicket);
+        const ticketId = response.data.idTicketDto;
+
+        // If attachments exist, upload them
+        if (attachments.length > 0) {
+            for (let i = 0; i < attachments.length; i++) {
+                const formData = new FormData();
+                formData.append('file', attachments[i]);
+
+                await request('post', `/api/ticketAttachements/upload/${ticketId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data' // This is now correctly handled in the axios helper
+                    }
+                });
             }
-          });
         }
-      }
-      
-      console.log('Ticket and attachments created:', response.data);
-      // Redirect to another page or display success message
+
+        console.log('Ticket and attachments created:', response.data);
     } catch (error) {
-      console.error('Error creating ticket:', error);
-      // Handle error, display error message
+        console.error('Error creating ticket:', error);
     }
-  };
+};
+
 
   return (
     <Container>

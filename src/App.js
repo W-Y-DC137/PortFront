@@ -11,12 +11,18 @@ import TicketDetails from './pages/TicketDetails';
 import PageAdmin from "./pages/PageAcceuilAdmin";
 import AdminUserList from './pages/AdminPages/UsersList';
 import PrivateRoute from './router/PrivateRouter';
+import TicketDetailsClient from './pages/ClientPages/TicketDetailsClient';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const App = () => {
     return (
         <Router>
             <Routes>
+                
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot_password" element={<ForgotPassword />} />
+                <Route path="/reset_password" element={<ResetPassword />} />
                 <Route
                     path="/employee/profile"
                     element={
@@ -95,6 +101,14 @@ const App = () => {
                     element={
                         <PrivateRoute>
                             <ClientTicketList />
+                        </PrivateRoute>
+                    }
+                />
+                 <Route
+                    path="/client/tickets/:id"
+                    element={
+                        <PrivateRoute>
+                            <TicketDetailsClient />
                         </PrivateRoute>
                     }
                 />

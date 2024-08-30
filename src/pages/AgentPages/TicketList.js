@@ -32,8 +32,17 @@ const TicketList = () => {
     };
 
     const handleRowClick = (id) => {
-        navigate(`/ticket/${id}`);
+        const userRole = localStorage.getItem('role');
+    
+        if (userRole === 'ADMIN') {
+            navigate(`/client/tickets/${id}`);
+        } else if (userRole === 'AGENT') {
+            navigate(`/ticket/${id}`);
+        } else {
+            console.error('Unsupported user role:', userRole);
+        }
     };
+    
 
     if (loading) {
         return <p>Loading...</p>;

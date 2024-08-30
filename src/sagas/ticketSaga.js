@@ -1,8 +1,11 @@
-import { call, put, takeLatest, all } from 'redux-saga/effects';
+import { call, put, takeLatest, takeEvery, all } from 'redux-saga/effects';
+import axios from 'axios'; // Ensure axios is imported for API requests
 import { request } from '../apis/axios_helper';
-import { fetchTicketsSuccess, fetchTicketsFailure, fetchTicketDetailsSuccess, fetchTicketDetailsFailure } from '../actions/ticketActions';
-import { createTicketSuccess, createTicketFailure } from '../actions/ticketActions';
+import { fetchTicketsSuccess, fetchTicketsFailure, fetchTicketDetailsSuccess, fetchTicketDetailsFailure, 
+         fetchTicketsByClientSuccess, fetchTicketsByClientFailure, createTicketSuccess, createTicketFailure,
+         fetchTicketAttachmentsSuccess, fetchTicketAttachmentsFailure } from '../actions/ticketActions';
 
+// Saga for creating a ticket
 function* createTicketSaga(action) {
     try {
         const response = yield call(request, 'post', '/api/tickets', action.payload);
@@ -16,7 +19,7 @@ function* watchCreateTicketSaga() {
     yield takeLatest('CREATE_TICKET_REQUEST', createTicketSaga);
 }
 
-// Define the original fetchTicketsSaga
+// Saga for fetching tickets
 function* fetchTicketsSaga() {
     try {
         const response = yield call(request, 'get', '/api/tickets');
@@ -26,7 +29,11 @@ function* fetchTicketsSaga() {
     }
 }
 
-// Define the fetchTicketDetailsSaga for handling ticket details requests
+function* watchFetchTicketsSaga() {
+    yield takeLatest('FETCH_TICKETS_REQUEST', fetchTicketsSaga);
+}
+
+// Saga for fetching ticket details
 function* fetchTicketDetailsSaga(action) {
     try {
         const response = yield call(request, 'get', `/api/tickets/${action.payload}`);
@@ -36,14 +43,36 @@ function* fetchTicketDetailsSaga(action) {
     }
 }
 
-// Watcher saga for ticket list requests
-function* watchFetchTicketsSaga() {
-    yield takeLatest('FETCH_TICKETS_REQUEST', fetchTicketsSaga);
-}
-
-// Watcher saga for ticket details requests
 function* watchFetchTicketDetailsSaga() {
     yield takeLatest('FETCH_TICKET_DETAILS_REQUEST', fetchTicketDetailsSaga);
+}
+
+// Saga for fetching tickets by client ID
+function* fetchTicketsByClientSaga(action) {
+    try {
+        const response = yield call(request, 'get', `/api/tickets/client/${action.payload}`);
+        yield put(fetchTicketsByClientSuccess(response.data));
+    } catch (error) {
+        yield put(fetchTicketsByClientFailure(error.message));
+    }
+}
+
+function* watchFetchTicketsByClientSaga() {
+    yield takeLatest('FETCH_TICKETS_BY_CLIENT_REQUEST', fetchTicketsByClientSaga);
+}
+
+// Saga for fetching ticket attachments
+function* fetchTicketAttachmentsSaga(action) {
+    try {
+        const response = yield call(request, 'get', `/api/ticketAttachements/ticket/${action.payload}`);
+        yield put(fetchTicketAttachmentsSuccess(response.data));
+    } catch (error) {
+        yield put(fetchTicketAttachmentsFailure(error.message));
+    }
+}
+
+function* watchFetchTicketAttachments() {
+    yield takeEvery('FETCH_TICKET_ATTACHMENTS_REQUEST', fetchTicketAttachmentsSaga);
 }
 
 // Root saga for tickets
@@ -52,5 +81,7 @@ export default function* ticketSaga() {
         watchCreateTicketSaga(),
         watchFetchTicketsSaga(),
         watchFetchTicketDetailsSaga(),
+        watchFetchTicketsByClientSaga(),
+        watchFetchTicketAttachments(),
     ]);
 }

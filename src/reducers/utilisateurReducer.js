@@ -6,6 +6,7 @@ const initialState = {
 
 const utilisateurReducer = (state = initialState, action) => {
     switch (action.type) {
+        
         case 'FETCH_UTILISATEURS_REQUEST':
             return { ...state, loading: true };
         case 'FETCH_UTILISATEURS_SUCCESS':
