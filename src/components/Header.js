@@ -24,27 +24,31 @@ const Header = () => {
 
     // Function to navigate to the user's home page based on their role
     const navigateToHome = () => {
-        if (role === 'CLIENT') {
-            navigate('/client');
-        } else if (role === 'AGENT') {
-            navigate('/agent');
-        } else if (role === 'ADMIN') {
-            navigate('/admin');
+        switch (role) {
+            case 'CLIENT':
+                navigate('/client');
+                break;
+            case 'AGENT':
+                navigate('/agent');
+                break;
+            case 'ADMIN':
+                navigate('/admin');
+                break;
+            default:
+                navigate('/login');
         }
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position="static" style={{ backgroundColor: '#232f66' }}>
             <Toolbar>
-                
                 <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenu}>
                     <MenuIcon />
                 </IconButton>
-                
                 <Typography variant="h6" style={{ flexGrow: 1 }}>
-                    Header
+                    PORTClaim
                 </Typography>
-                <Button edge="end"  color="inherit" aria-label="home" onClick={navigateToHome} style={{ marginLeft: 'auto' }} >
+                <Button color="inherit" onClick={navigateToHome}>
                     Home
                 </Button>
                 <Menu
@@ -55,19 +59,19 @@ const Header = () => {
                 >
                     <MenuItem onClick={() => navigate('/employee/profile')}>Profile</MenuItem>
                     {role === 'CLIENT' && (
-                        [
-                            <MenuItem key="create-ticket" onClick={() => navigate('/client/create-ticket')}>Créer un ticket</MenuItem>,
-                            <MenuItem key="follow-tickets" onClick={() => navigate('/client/tickets')}>Suivre mes tickets</MenuItem>
-                        ]
+                        <>
+                            <MenuItem onClick={() => navigate('/client/create-ticket')}>Créer un ticket</MenuItem>
+                            <MenuItem onClick={() => navigate('/client/tickets')}>Suivre mes tickets</MenuItem>
+                        </>
                     )}
                     {role === 'AGENT' && (
-                        <MenuItem key="agent-tickets" onClick={() => navigate('/agent/tickets')}>Liste des tickets</MenuItem>
+                        <MenuItem onClick={() => navigate('/agent/tickets')}>Liste des tickets</MenuItem>
                     )}
                     {role === 'ADMIN' && (
-                        [
-                            <MenuItem key="admin-tickets" onClick={() => navigate('/admin/tickets')}>Liste des tickets</MenuItem>,
-                            <MenuItem key="admin-users" onClick={() => navigate('/admin/users')}>Liste des utilisateurs</MenuItem>
-                        ]
+                        <>
+                            <MenuItem onClick={() => navigate('/admin/tickets')}>Liste des tickets</MenuItem>
+                            <MenuItem onClick={() => navigate('/admin/users')}>Liste des utilisateurs</MenuItem>
+                        </>
                     )}
                     <MenuItem onClick={handleLogout}>Sortir</MenuItem>
                 </Menu>

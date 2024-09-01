@@ -4,12 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { fetchTicketsByClientRequest } from '../../actions/ticketActions';
 import { fetchUtilisateursRequest } from '../../actions/utilisateurActions';
 import { fetchReferentielsRequest } from '../../actions/referentialActions';
-import Header from '../../components/Header';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import HomeIcon from '@mui/icons-material/Home';
+import InboxIcon from '@mui/icons-material/Inbox';
+import MailIcon from '@mui/icons-material/Mail';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const TicketList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
     
     const { tickets, loading: ticketsLoading, error: ticketsError } = useSelector(state => state.tickets);
     const { utilisateurs, loading: utilisateursLoading, error: utilisateursError } = useSelector(state => state.utilisateurs);
@@ -39,6 +44,55 @@ const TicketList = () => {
         navigate(`/client/tickets/${id}`);
     };
 
+    const toggleDrawer = (open) => (event) => {
+        if (
+            event.type === 'keydown' && 
+            (event.key === 'Tab' || event.key === 'Shift')
+        ) {
+            return;
+        }
+        setDrawerOpen(open);
+    };
+
+    const drawerList = (
+        <div
+            role="presentation"
+            onClick={toggleDrawer(false)}
+            onKeyDown={toggleDrawer(false)}
+            style={{ width: 250 }}
+        >
+            <List>
+                <ListItem button onClick={() => navigate('/client')}>
+                    <ListItemIcon>
+                        <HomeIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Accueil" />
+                </ListItem>
+                <ListItem button onClick={() => navigate('/client/create-ticket')}>
+                    <ListItemIcon>
+                        <InboxIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Soumettre une demande" />
+                </ListItem>
+                <ListItem button onClick={() => navigate('/client/tickets')}>
+                    <ListItemIcon>
+                        <MailIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Suivre ma demande" />
+                </ListItem>
+            </List>
+            <Divider />
+            <List>
+                <ListItem button onClick={() => navigate('/logout')}>
+                    <ListItemIcon>
+                        <LogoutIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Se déconnecter" />
+                </ListItem>
+            </List>
+        </div>
+    );
+
     if (ticketsLoading || utilisateursLoading || referentielsLoading) {
         return <p>Loading...</p>;
     }
@@ -49,9 +103,49 @@ const TicketList = () => {
 
     return (
         <div>
-            <Header />
-            <h1>Ticket List</h1>
-            <TableContainer component={Paper}>
+            <AppBar position="static" style={{ backgroundColor: '#232f66' }}>
+                <Toolbar>
+                    <IconButton 
+                        edge="start" 
+                        color="inherit" 
+                        aria-label="menu"
+                        onClick={toggleDrawer(true)}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" style={{ flexGrow: 1 }}>
+                        PORTClaim
+                    </Typography>
+                    <Button 
+                        color="inherit" 
+                        startIcon={<HomeIcon />} 
+                        onClick={() => navigate('/client')}
+                    >
+                        Accueil
+                    </Button>
+                </Toolbar>
+            </AppBar>
+
+            <Drawer
+                anchor="left"
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
+            >
+                {drawerList}
+            </Drawer>
+
+            <Typography 
+                variant="h5" 
+                align="center" 
+                style={{ 
+                    marginTop: '20px', 
+                    color: '#232f66', 
+                }}
+            >
+                Liste des Tickets
+            </Typography>
+
+            <TableContainer component={Paper} style={{ marginTop: '20px' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
