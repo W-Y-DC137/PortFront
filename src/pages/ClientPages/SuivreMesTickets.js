@@ -1,19 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useEffect , useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchTicketsByClientRequest } from '../../actions/ticketActions';
 import { fetchUtilisateursRequest } from '../../actions/utilisateurActions';
 import { fetchReferentielsRequest } from '../../actions/referentialActions';
+import TruncatedText from '../../components/TruncatedText';
 import Header from '../../components/Header';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import BreadcrumbsComponent from '../../components/BreadcrumbsComponent';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,Box ,TextField ,Checkbox, 
+    FormControlLabel,
+    CircularProgress,
+    Typography,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Grid} from '@mui/material';
+
+const getUrgencyColor = (niveauUrgence) => {
+    switch (niveauUrgence) {
+        case 'ELEVE':
+            return 'red';
+        case 'MOYEN':
+            return '#ffa500';
+        case 'FAIBLE':
+            return 'yellow';
+        default:
+            return 'gray'; // default color if no match
+    }
+};
+
+const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(); // Formats date and time based on locale
+};
+
+const getStatusColor = (status) => {
+    switch (status) {
+        case 'Nouveau':
+            return '#A9A9A9'; // Gray
+        case 'Affecte':
+            return '#007BFF'; // Blue
+        case 'En_Attente':
+            return '#FFA500'; // Orange
+        case 'Repondu':
+            return '#800080'; // Purple
+        case 'Resolu':
+            return '#28A745'; // Green
+        case 'Cloture':
+            return '#8B0000'; // Dark Red
+        default:
+            return 'gray'; // Default color if no match
+    }
+};
 
 const TicketList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [ticketType, setTicketType] = useState('');
     
     const { tickets, loading: ticketsLoading, error: ticketsError } = useSelector(state => state.tickets);
     const { utilisateurs, loading: utilisateursLoading, error: utilisateursError } = useSelector(state => state.utilisateurs);
     const { referentiels, loading: referentielsLoading, error: referentielsError } = useSelector(state => state.referentiels);
+    
 
     useEffect(() => {
         dispatch(fetchUtilisateursRequest());
@@ -24,6 +75,10 @@ const TicketList = () => {
             dispatch(fetchTicketsByClientRequest(userId));
         }
     }, [dispatch]);
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);  // Update search input state
+    };
 
     const getUtilisateurName = (userId) => {
         const utilisateur = utilisateurs.find(u => u.id === userId);
@@ -39,6 +94,36 @@ const TicketList = () => {
         navigate(`/client/tickets/${id}`);
     };
 
+    const handleTicketTypeChange = (event) => {
+        setTicketType(event.target.value);  // Update the ticket type state
+    };
+
+    const filteredTickets = tickets.filter(ticket => {
+        const searchStr = searchTerm.toLowerCase();
+        const matchesSearch = (
+            ticket.idTicketDto.toString().includes(searchStr) ||
+            ticket.typeTicketDto.toLowerCase().includes(searchStr) ||
+            getReferentielLibelle(ticket.themeId).toLowerCase().includes(searchStr) ||
+            getReferentielLibelle(ticket.sousThemeId).toLowerCase().includes(searchStr) ||
+            ticket.niveauUrgenceDto.toLowerCase().includes(searchStr) ||
+            ticket.objetDto.toLowerCase().includes(searchStr) ||
+            ticket.descriptionDto.toLowerCase().includes(searchStr) ||
+            getUtilisateurName(ticket.idClientDto).toLowerCase().includes(searchStr) ||
+            getUtilisateurName(ticket.idAgentDto).toLowerCase().includes(searchStr) ||
+            ticket.statusDto.toLowerCase().includes(searchStr)
+        );
+
+        
+
+            const matchesType = ticketType 
+            ? ticket.typeTicketDto.toLowerCase() === ticketType.toLowerCase()
+            : true;
+
+        console.log(`Ticket ID: ${ticket.idTicketDto}, Type: ${ticket.typeTicketDto}, Matches Type: ${matchesType}`);
+
+        return matchesSearch &&  matchesType;
+    });
+
     if (ticketsLoading || utilisateursLoading || referentielsLoading) {
         return <p>Loading...</p>;
     }
@@ -50,44 +135,151 @@ const TicketList = () => {
     return (
         <div>
             <Header />
-            <h1>Ticket List</h1>
+            <BreadcrumbsComponent />
+            <Box mb={2} mt={2} display="flex" flexDirection="column" gap={2}>
+            <Grid container spacing={4} alignItems="center">
+  {/* Champ de recherche */}
+  <Grid item xs={12} md={8}>
+    <TextField
+      label="Chercher un ticket"
+      variant="outlined"
+      fullWidth
+      value={searchTerm}
+      onChange={handleSearchChange}
+      placeholder="Rechercher par ID, Type, Urgence, etc..."
+     
+    />
+  </Grid>
+
+  {/* Menu déroulant pour filtrer par type de ticket */}
+  <Grid item xs={6} md={1.5}>
+    <FormControl variant="outlined" fullWidth>
+      <InputLabel>Type de ticket</InputLabel>
+      <Select
+        value={ticketType}
+        onChange={handleTicketTypeChange}
+        label="Type de ticket"
+      >
+        <MenuItem value="">
+          <em>Tous</em>
+        </MenuItem>
+        <MenuItem value="Reclamation">Réclamation</MenuItem>
+        <MenuItem value="Demande">Demande</MenuItem>
+      </Select>
+    </FormControl>
+  </Grid>
+</Grid>
+            </Box>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Ticket ID</TableCell>
+                            <TableCell>ID</TableCell>
                             <TableCell>Type</TableCell>
                             <TableCell>Theme</TableCell>
                             <TableCell>SousTheme</TableCell>
-                            <TableCell>Niveau d'Urgence</TableCell>
-                            <TableCell>Objet</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Date d'Ouverture</TableCell>
-                            <TableCell>Nom du Client</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Nom d'Agent</TableCell>
+                            <TableCell
+                            style={{ width: 150 , justifyContent: 'center',
+                                alignItems: 'center',
+                                textAlign: 'center' }}
+                            >Niveau d'Urgence</TableCell>
+                             <TableCell
+                            style={{width: 90 , justifyContent: 'center',
+                                alignItems: 'center',
+                                textAlign: 'center'}}
+                            >Status</TableCell>
+                            <TableCell
+                            style={{ justifyContent: 'center',
+                                alignItems: 'center',
+                                textAlign: 'center' }}
+                            >Objet</TableCell>
+                            <TableCell style={{ justifyContent: 'center',
+                               alignItems: 'center',
+                               textAlign: 'center' }} > Description</TableCell>
+                            <TableCell style={{ width: 150 , justifyContent: 'center',
+                               alignItems: 'center',
+                               textAlign: 'center' }} 
+                            >Date d'Ouverture</TableCell>
+                           
+                            {/* <TableCell>Nom d'Agent</TableCell> */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {tickets.length > 0 ? (
-                            tickets.map((ticket, index) => (
+                        {filteredTickets.length > 0 ? (
+                            filteredTickets.map((ticket, index) => (
                                 <TableRow
                                     key={ticket.idTicketDto}
-                                    sx={{ backgroundColor: index % 2 === 0 ? 'white' : '#f5f5f5' }}
+                                    sx={{ backgroundColor: index % 2 === 0 ? 'white' : '#f5f5f5' ,
+                                        borderBottom: '4px solid #232f66'
+                                    }}
                                     onClick={() => handleRowClick(ticket.idTicketDto)}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <TableCell>{ticket.idTicketDto}</TableCell>
                                     <TableCell>{ticket.typeTicketDto}</TableCell>
-                                    <TableCell>{getReferentielLibelle(ticket.themeId)}</TableCell>
+                                    <TableCell><TruncatedText text={getReferentielLibelle(ticket.themeId)} maxLength={60} /></TableCell>
                                     <TableCell>{getReferentielLibelle(ticket.sousThemeId)}</TableCell>
-                                    <TableCell>{ticket.niveauUrgenceDto}</TableCell>
-                                    <TableCell>{ticket.objetDto}</TableCell>
-                                    <TableCell>{ticket.descriptionDto}</TableCell>
-                                    <TableCell>{ticket.dateOuvertureDto}</TableCell>
-                                    <TableCell>{getUtilisateurName(ticket.idClientDto)}</TableCell>
-                                    <TableCell>{ticket.statusDto}</TableCell>
-                                    <TableCell>{getUtilisateurName(ticket.idAgentDto)}</TableCell>
+                                    <TableCell
+                                    style={{ width: 90 , justifyContent: 'center',
+                                        alignItems: 'center',
+                                        textAlign: 'center' }}
+                                    >
+                                        <Box 
+                                            component="span" 
+                                            sx={{
+                                                display: 'inline-block',
+                                                width: 10,
+                                                height: 10,
+                                                backgroundColor: getUrgencyColor(ticket.niveauUrgenceDto),
+                                                marginRight: 1, // Space between the square and the text
+                                                borderRadius: '2px', // Optionally round the square's edges
+                                                border: '1px solid black'
+                                            }}
+                                        />
+                                        {ticket.niveauUrgenceDto}
+                                    </TableCell>
+
+                                    <TableCell
+                                     style={{width: 90 , justifyContent: 'center',
+                                        alignItems: 'center',
+                                        textAlign: 'center'}}
+                                    >
+                                        <Box 
+                                            component="span" 
+                                            sx={{
+                                                display: 'inline-block',
+                                                width: 10,
+                                                height: 10,
+                                                backgroundColor: getStatusColor(ticket.statusDto),
+                                                marginRight: 1, // Space between the square and the text
+                                                borderRadius: '2px', // Optional rounded edges
+                                                border: '1px solid black' // Black border around the square
+                                            }}
+                                        />
+                                        {ticket.statusDto}
+                                    </TableCell>
+
+                                    <TableCell
+                                    style={{width: 90 , justifyContent: 'center',
+                                        alignItems: 'center',
+                                        textAlign: 'center'}}
+                                    ><TruncatedText text={ticket.objetDto} maxLength={60} /></TableCell>
+                                    <TableCell
+                                    style={{width: 90 , justifyContent: 'center',
+                                        alignItems: 'center',
+                                        textAlign: 'center'}}
+                                    ><TruncatedText text={ticket.descriptionDto} maxLength={100} /></TableCell>
+                                    <TableCell style={{ width: 200 , justifyContent: 'center',
+                               alignItems: 'center',
+                               textAlign: 'center'}}
+                                    >{formatDateTime(ticket.dateOuvertureDto)}</TableCell>
+                                    
+                                   
+                                    {/* <TableCell
+                                     style={{width: 90 , justifyContent: 'center',
+                                        alignItems: 'center',
+                                        textAlign: 'center'}}
+                                    >{getUtilisateurName(ticket.idAgentDto)}</TableCell> */}
                                 </TableRow>
                             ))
                         ) : (

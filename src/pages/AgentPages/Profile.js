@@ -1,9 +1,10 @@
-// src/pages/Profile.js
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, IconButton, Grid, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { TextField, Button, IconButton, Grid, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Snackbar, Alert } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { request } from '../../apis/axios_helper';
 import Header from '../../components/Header';
+import BreadcrumbsComponent from '../../components/BreadcrumbsComponent';
+import CustomAvatar from '../../components/CustomAvatare'; // Ensure the correct path
 
 const Profile = () => {
     const userId = localStorage.getItem('userId');
@@ -12,6 +13,7 @@ const Profile = () => {
     const [isChanged, setIsChanged] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -40,6 +42,7 @@ const Profile = () => {
             await request('put', `/api/utilisateurs/${userId}`, user);
             setEditMode({ username: false, email: false });
             setIsChanged(false);
+            setSnackbarOpen(true); // Show success message
         } catch (error) {
             console.error('Error updating user data:', error);
         }
@@ -69,44 +72,80 @@ const Profile = () => {
         }
     };
 
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
     return (
         <div>
-            <Header/>
-            <Grid container spacing={2} direction="column" alignItems="center">
-                <Grid item>
-                    <h1>Welcome to Profile Page</h1>
-                </Grid>
-                <Grid item>
-                    <TextField
-                        label="Username"
-                        value={user.nomUtilisateur}
-                        onChange={handleInputChange('nomUtilisateur')}
-                        disabled={!editMode.username}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton onClick={handleEditClick('username')}>
-                                    <EditIcon />
-                                </IconButton>
-                            ),
-                        }}
-                    />
-                </Grid>
-                <Grid item>
-                    <TextField
-                        label="Email"
-                        value={user.email}
-                        onChange={handleInputChange('email')}
-                        disabled={!editMode.email}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton onClick={handleEditClick('email')}>
-                                    <EditIcon />
-                                </IconButton>
-                            ),
-                        }}
-                    />
-                </Grid>
-                <Grid item>
+            <Header />
+            <BreadcrumbsComponent/>
+            <Box
+                sx={{
+                    maxWidth: '600px',
+                    margin: 'auto',
+                    padding: '20px',
+                    border: '2px solid #232f66',
+                    marginTop: '60px',
+                    borderRadius: '8px',
+                    textAlign: 'center', // Center content horizontally
+                }}
+            >
+                <h1>Mon Profile</h1>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center', // Center avatar horizontally
+                        marginBottom: '20px',
+                    }}
+                >
+                    <CustomAvatar name={user.nomUtilisateur} />
+                </Box>
+                <TextField
+                    label="Nom d'utilisateur"
+                    value={user.nomUtilisateur}
+                    onChange={handleInputChange('nomUtilisateur')}
+                    disabled={!editMode.username}
+                    InputProps={{
+                        endAdornment: (
+                            <IconButton onClick={handleEditClick('username')}>
+                                <EditIcon />
+                            </IconButton>
+                        ),
+                    }}
+                    fullWidth
+                />
+                <TextField
+                    style={{ marginTop: '16px' }}
+                    label="Email"
+                    value={user.email}
+                    onChange={handleInputChange('email')}
+                    disabled={!editMode.email}
+                    InputProps={{
+                        endAdornment: (
+                            <IconButton onClick={handleEditClick('email')}>
+                                <EditIcon />
+                            </IconButton>
+                        ),
+                    }}
+                    fullWidth
+                />
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleChangePasswordClick}
+                    sx={{ marginTop: '20px', backgroundColor: '#232f66' }} // Custom color
+                >
+                    Changer le mot de passe
+                </Button>
+                <Box
+                    sx={{
+                        marginTop: '20px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '10px', // Space between buttons
+                    }}
+                >
                     <Button
                         variant="contained"
                         color="primary"
@@ -115,17 +154,14 @@ const Profile = () => {
                     >
                         Enregistrer
                     </Button>
-                </Grid>
-                <Grid item>
                     <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={handleChangePasswordClick}
+                        variant="outlined"
+                        onClick={() => window.history.back()} // Go back to the previous page
                     >
-                        Changer mot de passe
+                        Annuler
                     </Button>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
 
             <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Changer mot de passe</DialogTitle>
@@ -167,6 +203,18 @@ const Profile = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Snackbar for success message */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                    Mise à jour réussie !
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

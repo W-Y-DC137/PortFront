@@ -1,45 +1,86 @@
 import React, { useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import { Avatar, Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
-
+import { Avatar, Button, Grid, Paper, TextField, Typography } from "@mui/material";
+import { useNavigate , useLocation } from 'react-router-dom';
+import { getAuth, signInWithCustomToken } from 'firebase/auth'; 
 import LockIcon from '@mui/icons-material/Lock';
 import PortLogo from './images/PortLogo.png';
 import { request } from "../apis/axios_helper";
+import axios from "axios";
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate()
+    const [error, setError] = useState(''); // State for managing error messages
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogin = async (event) => {
         event.preventDefault();
+        setError(''); // Clear previous errors
         try {
             const response = await request('post', '/api/auth/authenticate', { username, password });
             console.log('Response:', response.data); // Add this line to inspect the response data
-            const { token } = response.data;
-            console.log('Token:', token); // Add this line to inspect the token
+          
+            // Destructure both JWT token and Firebase token from response
+           const { token, firebaseToken } = response.data;
+           console.log('JWT Token:', token);
+           console.log('Firebase Token:', firebaseToken);
+
+           if (token && firebaseToken) {
+            // Decode JWT token
+            const decodedToken = jwtDecode(token);
+            localStorage.setItem("token", token);
+            localStorage.setItem('role', decodedToken.role);
+            localStorage.setItem('userId', decodedToken.id);
+            localStorage.setItem('username', decodedToken.username);
+
+            // Get the redirect URL from the query parameters
+            const searchParams = new URLSearchParams(location.search);
+            const redirectUrl = searchParams.get('redirect') || '/';
+
+
     
-            if (token) {
-                const decodedToken = jwtDecode(token);
-                localStorage.setItem("token", token);
-                localStorage.setItem('role', decodedToken.role);
-                localStorage.setItem('userId', decodedToken.id);
     
-                if (decodedToken.role === 'ADMIN') {
-                    navigate("/admin");
-                } else if (decodedToken.role === 'AGENT') {
-                    navigate("/agent");
-                } else if (decodedToken.role === 'CLIENT') {
-                    navigate("/client");
+            
+
+            // Firebase authentication using custom token
+            const auth = getAuth(); // Initialize Firebase Auth
+            try {
+                await signInWithCustomToken(auth, firebaseToken);
+                console.log('Firebase authentication successful');
+                
+                // Redirect to the specified URL or default based on role
+                if (redirectUrl !== '/') {
+                    navigate(redirectUrl);
+                } else {
+                    switch(decodedToken.role) {
+                        case 'ADMIN':
+                            navigate("/admin");
+                            break;
+                        case 'AGENT':
+                            navigate("/agent");
+                            break;
+                        case 'CLIENT':
+                            navigate("/client");
+                            break;
+                        default:
+                            navigate("/");
+                    }
                 }
-            } else {
-                console.log("No token received");
+            } 
+            catch (error) {
+                console.error('Firebase authentication failed', error);
+                setError("Failed to authenticate with Firebase.");
             }
-        } catch (error) {
-            console.error('Login failed', error);
+        } else {
+            setError("Nom d'utilisateur ou mot de passe incorrect");
         }
-    };
+    } catch (error) {
+        console.error('Login failed', error);
+        setError("Nom d'utilisateur ou mot de passe incorrect");
+    }
+};
     
 
     return (
@@ -76,18 +117,25 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <FormControlLabel
-                        control={<Checkbox />}
-                        label="Se souvenir de moi"
-                    />
+                    {/* Display error message if there is one */}
+                    {error && (
+                        <Typography color="error" style={{ marginTop: '16px', textAlign: 'center' }}>
+                            {error}
+                        </Typography>
+                    )}
                     <Button 
                         type="submit" 
-                        style={{ backgroundColor: '#232f66', color: '#ffffff' }} 
+                        style={{ backgroundColor: '#232f66', color: '#ffffff', marginTop: '16px' }} 
                         fullWidth
                     >
                         Se connecter
                     </Button>
-                    
+                    {/* Forgot password link */}
+                    <Typography style={{ marginTop: '16px' }}>
+                        <a href="/forgot_password" style={{ color: '#232f66', textDecoration: 'none' }}>
+                            Mot de passe oublié ?
+                        </a>
+                    </Typography>
                 </form>
             </Paper>
         </Grid>
