@@ -94,12 +94,18 @@ const Header = () => {
     };
 
     const navigateToHome = () => {
-        if (role === 'CLIENT') {
-            navigate('/client');
-        } else if (role === 'AGENT') {
-            navigate('/agent');
-        } else if (role === 'ADMIN') {
-            navigate('/admin');
+        switch (role) {
+            case 'CLIENT':
+                navigate('/client');
+                break;
+            case 'AGENT':
+                navigate('/agent');
+                break;
+            case 'ADMIN':
+                navigate('/admin');
+                break;
+            default:
+                navigate('/login');
         }
     };
 
@@ -130,6 +136,7 @@ const Header = () => {
     
 
     return (
+<<<<<<< HEAD
         <AppBar position="static" sx={{ backgroundColor: '#232f66' }}>
             <Toolbar>
                 {/* Menu pour la navigation */}
@@ -175,6 +182,43 @@ const Header = () => {
                 {username && (
                     <CustomAvatar name={username} />
                 )}
+=======
+        <AppBar position="static" style={{ backgroundColor: '#232f66' }}>
+            <Toolbar>
+                <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenu}>
+                    <MenuIcon />
+                </IconButton>
+                <Typography variant="h6" style={{ flexGrow: 1 }}>
+                    PORTClaim
+                </Typography>
+                <Button color="inherit" onClick={navigateToHome}>
+                    Home
+                </Button>
+                <Menu
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                >
+                    <MenuItem onClick={() => navigate('/employee/profile')}>Profile</MenuItem>
+                    {role === 'CLIENT' && (
+                        <>
+                            <MenuItem onClick={() => navigate('/client/create-ticket')}>Créer un ticket</MenuItem>
+                            <MenuItem onClick={() => navigate('/client/tickets')}>Suivre mes tickets</MenuItem>
+                        </>
+                    )}
+                    {role === 'AGENT' && (
+                        <MenuItem onClick={() => navigate('/agent/tickets')}>Liste des tickets</MenuItem>
+                    )}
+                    {role === 'ADMIN' && (
+                        <>
+                            <MenuItem onClick={() => navigate('/admin/tickets')}>Liste des tickets</MenuItem>
+                            <MenuItem onClick={() => navigate('/admin/users')}>Liste des utilisateurs</MenuItem>
+                        </>
+                    )}
+                    <MenuItem onClick={handleLogout}>Sortir</MenuItem>
+                </Menu>
+>>>>>>> 013da6acc733bb923b46f79b8f6d9bf36a9dd9d6
             </Toolbar>
 
             {/* Menu des notifications */}
